@@ -30,7 +30,7 @@ var start_pull = function() {
         if (global_status == "running") {
             setTimeout(function() {
                 start_pull();
-            }, 1000 * 60 * 1);
+            }, 1000 * 60 * 10);
         }
     });
 };
@@ -39,7 +39,7 @@ var server_proc;
 
 var start_server = function() {
     console.info("Running HTTP server");
-    server_proc = spawn(path.join(__dirname, "serve.sh"), []);
+    server_proc = spawn(path.join(__dirname, "serve_root.sh"), []);
 
     server_proc.stdout.on('data', (data) => {
         var splt = data.toString().split('\n');
@@ -66,9 +66,18 @@ var start_server = function() {
     });
 };
 
+start_pull();
+start_server();
+
 process.on('SIGINT', function() {
     console.log("HOST: Caught interrupt signal");
+    global_status = "stopped";
 
     server_proc.kill();
     pull_proc.kill();
+
+    setTimeout(() => {
+        process.exit(0);
+    }, 500);
+
 });
